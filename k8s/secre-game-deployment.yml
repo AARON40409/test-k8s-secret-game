@@ -1,19 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: katika-api-deployment
+  labels:
+    app: katika-api
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 2
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: katika-api
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: katika-api
     spec:
       containers:
-      - name: {{ .Release.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      - name: katika-api
+        image: lebon4031/secret_game_api:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: {{ .Values.service.port }}
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://katika:MDYwMjJjMjYtMzEzNy00OGMzLWExYmEtODRjYWYwNjE3NTU5Cg@54.38.80.173:5436/katika_db"
+        - name: NODE_ENV
+          value: "production"
