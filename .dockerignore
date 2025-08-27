@@ -1,0 +1,11 @@
+**/*
+!src/**/*
+!package.json
+!package-lock.json
+!tsconfig.json
+!yarn.lock
+!tsconfig.build.json
+!.yarn*
+!nest-cli.json
+!prisma/**/*/
+!libs/**/*/

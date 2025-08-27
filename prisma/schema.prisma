@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model IndiceNomine {
+  id            Int         @id @default(autoincrement())
+  indice        String?     @db.VarChar(255)
+  participantId Int         @unique
+  participant   Participant @relation(fields: [participantId], references: [id])
+  created_at    DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at    DateTime?   @updatedAt @db.Timestamp(6)
+  deleted_at    DateTime?   @db.Timestamp(6)
+}
+
+enum Nomination {
+  En_cours_de_nomination
+  Nomine
+  Ex_nomine
+}
+
+model Vote {
+  id                    Int         @id @default(autoincrement())
+  participantId         Int // ID du participant qui vote
+  numeroID              Int
+  selectedParticipantId Int // ID du participant sélectionné (cible)
+  created_at            DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?   @updatedAt @db.Timestamp(6)
+  // groupe                String
+  participant           Participant @relation(fields: [participantId], references: [id])
+  selectedParticipant   Participant @relation("SelectedVotes", fields: [selectedParticipantId], references: [id])
+}
+
+model Participant {
+  id               Int            @id @default(autoincrement())
+  firstname        String?        @db.Text
+  lastname         String?        @db.Text
+  photo_url        String?        @db.Text
+  secret           String?        @db.Text
+  phone_number     String?        @unique @db.VarChar(15)
+  numeroIdentite   Int?           @unique
+  status           Boolean        @default(true) // booléen pour Actif/Inactif
+  nomination       Nomination?
+  nomines          IndiceNomine[]
+  dateNomination   DateTime?
+  // groupeNomination String?
+  password         String?
+  isConnect        Int            @default(0)
+  points           Int            @default(0) // points accumulés
+  created_at       DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?      @updatedAt @db.Timestamp(6)
+  deleted_at       DateTime?      @db.Timestamp(6)
+  Vote             Vote[]
+  SelectedVotes    Vote[]         @relation("SelectedVotes")
+}

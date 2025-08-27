@@ -1,0 +1,53 @@
+name: Deploy / Development
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - .github/workflows/deploy_prod.yaml
+      - .github/workflows/ci.yaml
+
+env:
+  app_name: secret_game_api
+  image_tag: develop
+  port: ${{ secrets.port }}
+  server: ${{ secrets.dev_server }}
+  user: ${{ secrets.dev_user }}
+  private_key: ${{ secrets.dev_ssh_private_key }}
+  app_env: ${{ secrets.dev_env }}
+  target: ${{ secrets.dev_user }}@${{ secrets.dev_server }}:/tmp
+  dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+  dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+  ssh_port: ${{ secrets.dev_ssh_port }}
+
+jobs:
+  build:
+    name: Build and push
+    uses: Everest-Develop-Center/devops/.github/workflows/build-docker.yaml@master
+    with:
+      app_name: secret_game_api
+      image_tag: develop
+      context: dockerhub
+      with_commit_image: true
+    secrets:
+      registry: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  deploy:
+    runs-on: ubuntu-22.04
+    name: Deploy
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploying
+        run: |
+          echo "${{ env.private_key }}" > private_key.pem
+          chmod 400 private_key.pem
+          scp -P ${{ env.ssh_port }} -i private_key.pem -o StrictHostKeyChecking=no scripts/deploy.sh ${{ env.target }}/deploy_${{ env.app_name }}.sh
+          ssh -p ${{ env.ssh_port }} -i private_key.pem -o StrictHostKeyChecking=no ${{ env.user }}@${{ env.server }} <<EOF
+            echo "${{ env.dockerhub_token }}" | docker login --username ${{ env.dockerhub_username }} --password-stdin
+            chmod +x -R /tmp/deploy_${{ env.app_name }}.sh
+            echo '${{ env.app_env }}' > /tmp/.env.${{ env.app_name }}
+            sh /tmp/deploy_${{ env.app_name }}.sh ${{ env.app_name }} "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.app_name }}:${{ env.image_tag }}" ${{ env.port }}
+          EOF

@@ -1,0 +1,9 @@
+replicaCount: 1
+image:
+  repository: lebon4031/test-k8s-secret-game
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 3000
