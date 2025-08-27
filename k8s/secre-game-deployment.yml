@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: katika-api-deployment
+  name: secret-game-deployment
   labels:
-    app: katika-api
+    app: secret-game-api
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: katika-api
+      app: secret-game-api
   template:
     metadata:
       labels:
-        app: katika-api
+        app: secret-game-api
     spec:
       containers:
-      - name: katika-api
+      - name: secret-game-api
         image: lebon4031/secret_game_api:latest
         imagePullPolicy: Always
         ports:
