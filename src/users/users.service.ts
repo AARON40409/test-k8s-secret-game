@@ -15,7 +15,7 @@ export class UsersService {
       throw new Error('Invalid input');
     }
     
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.participant.findFirst({
       where: {
         firstname: input.firstname,
       },
@@ -25,15 +25,15 @@ export class UsersService {
       throw new NotFoundException('User already exists');
     }
   
-    return this.prisma.user.create({
+    return this.prisma.participant.create({
       data: {
         ...input
       },
     });
   }
 
-  async findById(id: string) {
-    const getUser = await this.prisma.user.findUnique({
+  async findById(id: number) {
+    const getUser = await this.prisma.participant.findUnique({
       where: { id }});
       console.log('getUser:',getUser);
       
@@ -45,7 +45,7 @@ export class UsersService {
   }
 
   async getAllUser() {
-    const getAll = await this.prisma.user.findMany();
+    const getAll = await this.prisma.participant.findMany();
       console.log('getUser:',getAll);
       
       if (!getAll) {

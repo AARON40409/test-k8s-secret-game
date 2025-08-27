@@ -5,9 +5,9 @@ import HttpResponse from "src/response/response";
 import { ParticipantService } from "./participant.service";
 import { CreateParticipantDto } from "./dto/participant.dto";
 import { UpdateNomineesDto } from "./dto/nomine-update.dto";
-import { PhoneNumberDto } from "./dto/phone-number.dto";
 import { VoteDto } from "./dto/vote.dto";
 import { UpdateNomineeStatusDto } from "./dto/change-status-nomine.dto";
+import { LoginDto } from "./dto/phone-number.dto";
 
 @Controller('v1/participants')
 export class ParticipantController {
@@ -156,7 +156,7 @@ export class ParticipantController {
     description: "se connecté avec votre numero de telephone",
   })
   @ApiOperation({ summary: `se connecté avec votre numero de telephone` })
-  async login(@Body() phoneNumber: PhoneNumberDto) {
+  async login(@Body() phoneNumber: LoginDto) {
     const message = 'Opération effectuée avec succès';
     return HttpResponse.send(
       this.participantsService.loginWithPhone(phoneNumber),
