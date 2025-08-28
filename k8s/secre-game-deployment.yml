@@ -19,7 +19,7 @@ spec:
         image: lebon4031/secret_game_api:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 5000
+        - containerPort: 80
         env:
         - name: DATABASE_URL
           value: "postgresql://katika:MDYwMjJjMjYtMzEzNy00OGMzLWExYmEtODRjYWYwNjE3NTU5Cg@54.38.80.173:5436/katika_db"
