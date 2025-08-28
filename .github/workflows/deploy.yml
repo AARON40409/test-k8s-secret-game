@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - k8s   # ou main, selon ton choix
-
+# aaron
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
