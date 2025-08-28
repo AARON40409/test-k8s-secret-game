@@ -1,20 +1,47 @@
-name: Deploy
+name: Build for Kubernetes
 
 on:
   push:
     branches:
-      - k8s   # ou main, selon ton choix
-# aaron
+      - k8s
+
+env:
+  app_name: secret_game_api
+  image_tag: k8s
+
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  build:
+    name: Build and push to DockerHub
+    uses: Everest-Develop-Center/devops/.github/workflows/build-docker.yaml@master
+    with:
+      app_name: secret_game_api
+      image_tag: k8s
+      context: dockerhub
+      with_commit_image: true
+    secrets:
+      registry: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Build & Push Image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest
+
+# name: Deploy
+
+# on:
+#   push:
+#     branches:
+#       - k8s   # ou main, selon ton choix
+# # aaron
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Login to DockerHub
+#         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+#       - name: Build & Push Image
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest .
+#           docker push ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest
