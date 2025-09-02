@@ -13,7 +13,6 @@ import { CustomEnum } from "src/util/custom-enum";
 import { Decrypt, Encrypt } from "src/util/crypto-utils";
 
 
-
 @Injectable()
 export class ParticipantService {
   constructor(private prisma: PrismaService,
