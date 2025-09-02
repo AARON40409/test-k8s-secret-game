@@ -7,7 +7,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: secret-game.local
+  - host: api-sg.everest-consulting.org
     http:
       paths:
       - pathType: Prefix
