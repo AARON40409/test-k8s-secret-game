@@ -7,7 +7,7 @@ on:
 jobs:
   deploy-to-eks:
     name: Deploy to EKS Cluster
-    uses: AARON40409/DevOpsAaron/.github/workflows/deploy-eks.yaml@main
+    uses: AARON40409/DevOpsAaron/.github/workflows/deploy-eks.yml@main
     with:
       app_name: secret_game_api
       image_tag: ${{ github.sha }}
