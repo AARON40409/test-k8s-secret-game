@@ -4,6 +4,9 @@ import { AppModule } from './app.module';
 import*as cookieParser from 'cookie-parser';
 import { DocumentBuilder,SwaggerModule } from '@nestjs/swagger';
 import { LoggingInterceptor } from './interceptor/interceptor';
+import { API_PREFIX } from './util/constants';
+import { Response } from 'express';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,6 +33,10 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document)
 
   // await app.listen(5000);
+  app.getHttpAdapter().get('', (req, res: Response) => {
+    res.redirect(`${API_PREFIX}/docs`);
+  });
+
   app.enableShutdownHooks();
   const port = process.env.PORT ?? 3000;
 
