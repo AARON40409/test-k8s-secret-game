@@ -6,13 +6,15 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  EKS_CLUSTER_NAME: secret-game-cluster  # Remplacez par le vrai nom
+  EKS_CLUSTER_NAME: secret-game-cluster
   DOCKER_IMAGE_NAME: secret_game_api
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,13 +25,20 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      - name: Build and Push
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Dépend du job build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: AWS Configure
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -37,10 +46,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
           
-      - name: EKS Connect
+      - name: Connect to EKS cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
             
-      - name: Deploy
+      - name: Deploy to Kubernetes
         run: |
           sed -i "s|image:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}|" k8s/secret-game-deployment.yml
           kubectl apply -f k8s/
