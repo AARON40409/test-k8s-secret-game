@@ -4,22 +4,81 @@ on:
   push:
     branches: [k8s]
 
-jobs:
-  deploy-to-eks:
-    name: Deploy to EKS Cluster
-    uses: AARON40409/DevOpsAaron/.github/workflows/deploy-eks.yml@main
-    with:
-      app_name: secret_game_api
-      image_tag: ${{ github.sha }}
-      eks_cluster_name: secret-game-cluster
-      aws_region: us-east-1
-      k8s_manifest_path: k8s/
-      dockerhub_username: lebon4031 # ← Correction : valeur directe au lieu de secret
-      deploy_stage: production
-      timeout_seconds: 300
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: secret-game-cluster
+  DOCKER_IMAGE_NAME: secret_game_api
+  IMAGE_TAG: ${{ github.sha }}
 
-    secrets:
-    
-      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+jobs:
+  build:
+    name: Build and push to DockerHub
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: DockerHub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    name: Deploy to k8s cluster
+    environment:
+      name: Production
+      url: ${{ steps.get-service-url.outputs.SERVICE_URL }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: AWS Configure
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Connect to EKS cluster
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+            
+      - name: Deploy to Kubernetes 
+        run: |
+          sed -i "s|image:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}|" k8s/secret-game-deployment.yml
+          kubectl apply -f k8s/
+
+      - name: Wait for LoadBalancer provisioning
+        id: get-service-url
+        run: |
+          echo "⏳ Attente de la provision du LoadBalancer AWS..."
+          
+          # Attendre maximum 3 minutes que le LoadBalancer soit disponible
+          for i in {1..18}; do
+            EXTERNAL_IP=$(kubectl get svc secret-game-svc -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+            
+            if [ -n "$EXTERNAL_IP" ]; then
+              echo "✅ LoadBalancer provisionné : $EXTERNAL_IP"
+              echo "SERVICE_URL=http://$EXTERNAL_IP" >> $GITHUB_OUTPUT
+              break
+            fi
+            
+            if [ $i -eq 18 ]; then
+              echo "❌ Timeout - LoadBalancer non provisionné après 3 minutes"
+              echo "SERVICE_URL=LoadBalancer-en-attente" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            sleep 10
+          done
