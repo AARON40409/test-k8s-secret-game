@@ -3,18 +3,40 @@ name: Deploy
 on:
   push:
     branches:
-      - k8s   # ou main, selon ton choix
-# aaronn
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - k8s   # branche surveillée par ArgoCD
 
+jobs:
+  build-and-update-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Récupérer le code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Login DockerHub
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Build & Push Image
+      # 3️⃣ Build l'image avec un tag unique (SHA du commit)
+      - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:latest
+          IMAGE_TAG=${GITHUB_SHA::8}  # prend les 8 premiers caractères du SHA
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:$IMAGE_TAG .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:$IMAGE_TAG
+
+      # 4️⃣ Mettre à jour le deployment.yaml avec le nouveau tag
+      - name: Update deployment.yaml
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::8}
+          sed -i "s|image:.*secret_game_api:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/secret_game_api:$IMAGE_TAG|" k8s/deployment.yaml
+
+      # 5️⃣ Commit et push les changements dans la branche k8s
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add k8s/deployment.yaml
+          git commit -m "Update deployment image to $GITHUB_SHA"
+          git push origin k8s
