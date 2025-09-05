@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  EKS_CLUSTER_NAME: your-eks-cluster-name  # Remplacez par le vrai nom
+  EKS_CLUSTER_NAME: secret-game-cluster  # Remplacez par le vrai nom
   DOCKER_IMAGE_NAME: secret_game_api
   IMAGE_TAG: ${{ github.sha }}
 
