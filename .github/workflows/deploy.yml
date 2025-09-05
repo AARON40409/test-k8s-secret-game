@@ -14,12 +14,12 @@ jobs:
       eks_cluster_name: secret-game-cluster
       aws_region: us-east-1
       k8s_manifest_path: k8s/
-      # dockerhub_username: AARON40409  # ← Correction : valeur directe au lieu de secret
+      dockerhub_username: AARON40409  # ← Correction : valeur directe au lieu de secret
       deploy_stage: production
       timeout_seconds: 300
 
     secrets:
-      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}  # ← Correction : secret dockerhub_username
+    
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
