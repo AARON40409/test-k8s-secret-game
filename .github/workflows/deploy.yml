@@ -14,12 +14,11 @@ jobs:
       eks_cluster_name: secret-game-cluster
       aws_region: us-east-1
       k8s_manifest_path: k8s/
-      dockerhub_username: lebon4031 
       deploy_stage: production
       timeout_seconds: 300
 
     secrets:
-    
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }} 
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
