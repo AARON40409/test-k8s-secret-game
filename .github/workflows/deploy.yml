@@ -70,7 +70,7 @@ jobs:
             
             if [ -n "$EXTERNAL_IP" ]; then
               echo "✅ LoadBalancer provisionné : $EXTERNAL_IP"
-              echo "SERVICE_URL=https://$EXTERNAL_IP" >> $GITHUB_OUTPUT
+              echo "SERVICE_URL=http://$EXTERNAL_IP" >> $GITHUB_OUTPUT
               break
             fi
             
