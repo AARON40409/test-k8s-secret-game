@@ -3,7 +3,7 @@ name: Deploy to EKS
 on:
   push:
     branches: [k8s]
-# correction:
+
 jobs:
   deploy-to-eks:
     name: Deploy to EKS Cluster
