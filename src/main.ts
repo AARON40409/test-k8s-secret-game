@@ -34,13 +34,13 @@ async function bootstrap() {
 
   // await app.listen(5000);
   app.getHttpAdapter().get('', (req, res: Response) => {
-    res.redirect(`${API_PREFIX}/docs`);
+    res.redirect(`${API_PREFIX}`);
   });
 
   app.enableShutdownHooks();
   const port = process.env.PORT ?? 3000;
 
   await app.listen(port);
-  Logger.log(`Application started on port ${port}`);
+  Logger.log(`Application started on port http://localhost:${port} 🚀`);
 }
 bootstrap();
