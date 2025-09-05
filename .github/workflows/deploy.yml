@@ -38,5 +38,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add k8s/secre-game-deployment.yml
-          git commit -m "Update deployment image to $GITHUB_SHA"
-          git push origin k8s
+          git commit -m "Update deployment image to $GITHUB_SHA" || echo "No changes to commit"
+          git push https://<YOUR_USERNAME>:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git k8s
