@@ -3,7 +3,6 @@ name: Deploy to EKS
 on:
   push:
     branches: [k8s]
-# aaron40409/DevOpsAaron/.github/workflows/deploy-eks.yml@main
 jobs:
   deploy-to-eks:
     name: Deploy to EKS Cluster
@@ -11,7 +10,7 @@ jobs:
     with:
       app_name: secret_game_api
       image_tag: ${{ github.sha }}
-      eks_cluster_name: secret-game-cluster
+      eks_cluster_name: secret-game
       aws_region: us-east-1
       k8s_manifest_path: k8s/
       deploy_stage: prod
