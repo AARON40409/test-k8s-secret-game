@@ -30,7 +30,7 @@ async function bootstrap() {
   .addBearerAuth({type:'http',scheme:'bearer', bearerFormat:'JWT',name:'JWT',description:'Entrer un jeton JWT',in: 'header'}, 'access-token')
   .build()
   const document = SwaggerModule.createDocument(app,config);
-  SwaggerModule.setup('api', app, document)
+  SwaggerModule.setup(`${API_PREFIX}`, app, document)
 
   // await app.listen(5000);
   app.getHttpAdapter().get('', (req, res: Response) => {
@@ -38,9 +38,9 @@ async function bootstrap() {
   });
 
   app.enableShutdownHooks();
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT;
 
   await app.listen(port);
-  Logger.log(`Application started on port http://localhost:${port} 🚀`);
+  Logger.log(`Secret game Api is running on http://localhost:${port} 🚀`);
 }
 bootstrap();
